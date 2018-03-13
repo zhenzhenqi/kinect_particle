@@ -1,3 +1,4 @@
+
 // a basic noise-based moving particle
 class Particle {
   // unique id, (previous) position, speed
@@ -17,8 +18,10 @@ class Particle {
     y += sin(radians(d))*s;
 
     // constrain to boundaries
-    if (x<-10) x=xp=kinectWidth+10; if (x>kinectWidth+10) x=xp=-10;
-    if (y<-10) y=yp=kinectHeight+10; if (y>kinectHeight+10) y=yp=-10;
+    if (x<-10) x=xp=kinectWidth+10;
+    if (x>kinectWidth+10) x=xp=-10;
+    if (y<-10) y=yp=kinectHeight+10;
+    if (y>kinectHeight+10) y=yp=-10;
 
     // if there is a polygon (more than 0 points)
     if (poly.npoints > 0) {

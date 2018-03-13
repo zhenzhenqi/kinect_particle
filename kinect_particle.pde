@@ -4,7 +4,6 @@
 import processing.opengl.*; // opengl
 import SimpleOpenNI.*; // kinect
 import blobDetection.*; // blobs
-import java.util.*;
 
 // this is a regular java import so we can use and extend the polygon class (see PolygonBlob)
 import java.awt.Polygon;
@@ -40,28 +39,18 @@ float globalX, globalY;
 
 void setup() {
   // it's possible to customize this, for example 1920x1080
-  //size(1280, 720, P3D);
-  fullScreen(P3D);
+  size(1280, 720, OPENGL);
   // initialize SimpleOpenNI object
   context = new SimpleOpenNI(this);
-    if(context.isInit() == false)
-  {
-     println("Can't init SimpleOpenNI, maybe the camera is not connected!"); 
-     exit();
-     return;  
-  }
-  //if (!context.enableUser()) { 
-  //  // if context.enableScene() returns false
-  //  // then the Kinect is not working correctly
-  //  // make sure the green light is blinking
-  //  println("Kinect not connected!"); 
-  //  exit();
-  //} 
-  //else {
+  if (!context.enableDepth() || !context.enableUser()) { 
+    // if context.enableScene() returns false
+    // then the Kinect is not working correctly
+    // make sure the green light is blinking
+    println("Kinect not connected!"); 
+    exit();
+  } else {
     // mirror the image to be more intuitive
     context.setMirror(true);
-    context.enableDepth();
-    context.enableUser();
     // calculate the reScale value
     // currently it's rescaled to fill the complete width (cuts of top-bottom)
     // it's also possible to fill the complete height (leaves empty sides)
@@ -72,7 +61,7 @@ void setup() {
     theBlobDetection = new BlobDetection(blobs.width, blobs.height);
     theBlobDetection.setThreshold(0.2);
     setupFlowfield();
-  //}
+  }
 }
 
 void draw() {
@@ -83,7 +72,7 @@ void draw() {
   // update the SimpleOpenNI object
   context.update();
   // put the image into a PImage
-  cam = context.userImage().get();
+  cam = context.depthImage();
   // copy the image into the smaller blob image
   blobs.copy(cam, 0, 0, cam.width, cam.height, 0, 0, blobs.width, blobs.height);
   // blur the blob image
