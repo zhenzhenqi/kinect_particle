@@ -7,7 +7,7 @@ class Particle {
   
   Particle(float id) {
     this.id = id;
-    s = random(2, 6); // speed
+    s = random(1, 4); // speed
   }
   
   void updateAndDisplay() {

@@ -1,4 +1,3 @@
-
 // an extended polygon class with my own customized createPolygon() method (feel free to improve!)
 class PolygonBlob extends Polygon {
 
@@ -15,8 +14,18 @@ class PolygonBlob extends Polygon {
 
     // create contours from blobs
     // go over all the detected blobs
-    for (int n=0 ; n<theBlobDetection.getBlobNb(); n++) {
+    for (int n=0; n<theBlobDetection.getBlobNb(); n++) {
       Blob b = theBlobDetection.getBlob(n);
+
+      //if (b!=null) {
+      //  strokeWeight(1);
+      //  stroke(255, 0, 0);
+      //  rect(
+      //    b.xMin*width, b.yMin*height, 
+      //    b.w*width, b.h*height
+      //    );
+      //}
+
       // for each substantial blob...
       if (b != null && b.getEdgeNb() > 100) {
         // create a new contour arrayList of PVectors
@@ -28,6 +37,14 @@ class PolygonBlob extends Polygon {
           EdgeVertex eB = b.getEdgeVertexB(m);
           // if both ain't null...
           if (eA != null && eB != null) {
+
+            //draw blobs
+            //stroke(255, 0, 0);
+            //strokeWeight(1);
+            //line(eA.x * width, eA.y * height, eB.x * width, eB.y * height);
+
+
+
             // get next and previous edgeVertexA
             EdgeVertex fn = b.getEdgeVertexA((m+1) % b.getEdgeNb());
             EdgeVertex fp = b.getEdgeVertexA((max(0, m-1)));
@@ -45,21 +62,21 @@ class PolygonBlob extends Polygon {
                 contours.add(contour);
                 // start a new contour arrayList
                 contour = new ArrayList<PVector>();
-              // if the current contour size is 0 (aka it's a new list)
+                // if the current contour size is 0 (aka it's a new list)
               } else {
                 // add the point to the list
                 contour.add(new PVector(eA.x*kinectWidth, eA.y*kinectHeight));
               }
-            // if both distance are smaller than 15 (aka the points are close)  
+              // if both distance are smaller than 15 (aka the points are close)
             } else {
               // add the point to the list
-              contour.add(new PVector(eA.x*kinectWidth, eA.y*kinectHeight));
+              contour.add(new PVector(eA.x * kinectWidth, eA.y * kinectHeight));
             }
           }
         }
       }
     }
-    
+
     // at this point in the code we have a list of contours (aka an arrayList of arrayLists of PVectors)
     // now we need to sort those contours into a correct polygon. To do this we need two things:
     // 1. The correct order of contours
@@ -67,7 +84,7 @@ class PolygonBlob extends Polygon {
 
     // as long as there are contours left...    
     while (contours.size() > 0) {
-      
+
       // find next contour
       float distance = 999999999;
       // if there are already points in the polygon
@@ -100,7 +117,7 @@ class PolygonBlob extends Polygon {
             selectedPoint = 1;
           }
         }
-      // if the polygon is still empty
+        // if the polygon is still empty
       } else {
         // use a starting point in the lower-right
         PVector closestPoint = new PVector(width, height);
@@ -135,7 +152,9 @@ class PolygonBlob extends Polygon {
       // add contour to polygon
       ArrayList<PVector> contour = contours.get(selectedContour);
       // if selectedPoint is bigger than zero (aka last point) then reverse the arrayList of points
-      if (selectedPoint > 0) { java.util.Collections.reverse(contour); }
+      if (selectedPoint > 0) { 
+        java.util.Collections.reverse(contour);
+      }
       // add all the points in the contour to the polygon
       for (PVector p : contour) {
         addPoint(int(p.x), int(p.y));

@@ -39,7 +39,8 @@ float globalX, globalY;
 
 void setup() {
   // it's possible to customize this, for example 1920x1080
-  size(1280, 720, OPENGL);
+  //size(1280, 720, OPENGL);
+  fullScreen(P3D);
   // initialize SimpleOpenNI object
   context = new SimpleOpenNI(this);
   if (!context.enableDepth() || !context.enableUser()) { 
@@ -59,7 +60,7 @@ void setup() {
     blobs = createImage(kinectWidth/3, kinectHeight/3, RGB);
     // initialize blob detection object to the blob image dimensions
     theBlobDetection = new BlobDetection(blobs.width, blobs.height);
-    theBlobDetection.setThreshold(0.2);
+    theBlobDetection.setThreshold(0.9);
     setupFlowfield();
   }
 }
@@ -72,13 +73,28 @@ void draw() {
   // update the SimpleOpenNI object
   context.update();
   // put the image into a PImage
-  cam = context.depthImage();
+  cam = context.userImage();
+
+  //hack
+
+  for (int i=0; i<cam.pixels.length; i++) {
+    if (saturation(cam.pixels[i])<1) {
+      cam.pixels[i] = color(0, 0, 0);
+    } else {
+      cam.pixels[i] = color(255, 255, 255);
+    }
+  }
+
+  //endhack
+
   // copy the image into the smaller blob image
   blobs.copy(cam, 0, 0, cam.width, cam.height, 0, 0, blobs.width, blobs.height);
   // blur the blob image
   blobs.filter(BLUR);
   // detect the blobs
   theBlobDetection.computeBlobs(blobs.pixels);
+
+  //image(cam, 0, 0, width, height);
   // clear the polygon (original functionality)
   poly.reset();
   // create the polygon from the blobs (custom functionality, see class)
@@ -88,9 +104,9 @@ void draw() {
 
 void setupFlowfield() {
   // set stroke weight (for particle display) to 2.5
-  strokeWeight(2.5);
+  strokeWeight(1);
   // initialize all particles in the flow
-  for(int i=0; i<flow.length; i++) {
+  for (int i=0; i<flow.length; i++) {
     flow[i] = new Particle(i/10000.0);
   }
   // set all colors randomly now
