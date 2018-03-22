@@ -1,5 +1,3 @@
-// Kinect Flow Example by Amnon Owed (15/09/12)
-
 // import libraries
 import processing.opengl.*; // opengl
 import SimpleOpenNI.*; // kinect
@@ -23,14 +21,16 @@ int kinectHeight = 480;
 // to center and rescale from 640x480 to higher custom resolutions
 float reScale;
 
-// background color
-color bgColor;
-// three color palettes (artifact from me storing many interesting color palettes as strings in an external data file ;-)
-String[] palettes = {
-  "-1117720,-13683658,-8410437,-9998215,-1849945,-5517090,-4250587,-14178341,-5804972,-3498634", 
-  "-67879,-9633503,-8858441,-144382,-4996094,-16604779,-588031", 
-  "-16711663,-13888933,-9029017,-5213092,-1787063,-11375744,-2167516,-15713402,-5389468,-2064585"
+//color stuff
+color backgroundColor = color(0,0,0);
+color[] particleColors = {
+  color(255, 231, 27), 
+  color(232, 126, 12), 
+  color(255, 0, 0), 
+  color(139, 12, 232)
 };
+
+
 
 // an array called flow of 2250 Particle objects (see Particle class)
 Particle[] flow = new Particle[2250];
@@ -39,8 +39,12 @@ float globalX, globalY;
 
 void setup() {
   // it's possible to customize this, for example 1920x1080
-  //size(1280, 720, OPENGL);
-  fullScreen(P3D);
+  size(1280, 720, P3D);
+
+
+
+
+  //fullScreen(P3D);
   // initialize SimpleOpenNI object
   context = new SimpleOpenNI(this);
   if (!context.enableDepth() || !context.enableUser()) { 
@@ -66,17 +70,17 @@ void setup() {
 }
 
 void draw() {
+  noCursor();
   // fading background
   noStroke();
-  fill(bgColor, 65);
+  fill(backgroundColor, 20);
   rect(0, 0, width, height);
   // update the SimpleOpenNI object
   context.update();
   // put the image into a PImage
   cam = context.userImage();
 
-  //hack
-
+  //turn user image to black/white
   for (int i=0; i<cam.pixels.length; i++) {
     if (saturation(cam.pixels[i])<1) {
       cam.pixels[i] = color(0, 0, 0);
@@ -110,7 +114,7 @@ void setupFlowfield() {
     flow[i] = new Particle(i/10000.0);
   }
   // set all colors randomly now
-  setRandomColors(1);
+  SetColor();
 }
 
 void drawFlowfield() {
@@ -125,24 +129,11 @@ void drawFlowfield() {
     p.updateAndDisplay();
   }
   // set the colors randomly every 240th frame
-  setRandomColors(240);
 }
 
 // sets the colors every nth frame
-void setRandomColors(int nthFrame) {
-  if (frameCount % nthFrame == 0) {
-    // turn a palette into a series of strings
-    String[] paletteStrings = split(palettes[int(random(palettes.length))], ",");
-    // turn strings into colors
-    color[] colorPalette = new color[paletteStrings.length];
-    for (int i=0; i<paletteStrings.length; i++) {
-      colorPalette[i] = int(paletteStrings[i]);
-    }
-    // set background color to first color from palette
-    bgColor = colorPalette[0];
-    // set all particle colors randomly to color from palette (excluding first aka background color)
-    for (int i=0; i<flow.length; i++) {
-      flow[i].col = colorPalette[int(random(1, colorPalette.length))];
-    }
+void SetColor() {
+  for (int i=0; i<flow.length; i++) {
+    flow[i].col = particleColors[int(random(0,particleColors.length))];
   }
 }

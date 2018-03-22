@@ -1,4 +1,3 @@
-
 // a basic noise-based moving particle
 class Particle {
   // unique id, (previous) position, speed
