@@ -2,18 +2,16 @@
 import processing.opengl.*; // opengl
 import SimpleOpenNI.*; // kinect
 import blobDetection.*; // blobs
-
-// this is a regular java import so we can use and extend the polygon class (see PolygonBlob)
 import java.awt.Polygon;
 
 // declare SimpleOpenNI object
 SimpleOpenNI context;
+SimpleOpenNI context2;
 // declare BlobDetection object
 BlobDetection theBlobDetection;
-// declare custom PolygonBlob object (see class for more info)
+// declare custom PolygonBlob object
 PolygonBlob poly = new PolygonBlob();
 
-// PImage to hold incoming imagery and smaller one for blob detection
 PImage cam, blobs;
 // the kinect's dimensions to be used later on for calculations
 int kinectWidth = 640;
@@ -21,8 +19,10 @@ int kinectHeight = 480;
 // to center and rescale from 640x480 to higher custom resolutions
 float reScale;
 
+boolean mirror;
+
 //color stuff
-color backgroundColor = color(0,0,0);
+color backgroundColor = color(0, 0, 0);
 color[] particleColors = {
   color(255, 231, 27), 
   color(232, 126, 12), 
@@ -31,37 +31,37 @@ color[] particleColors = {
 };
 
 
-
 // an array called flow of 2250 Particle objects (see Particle class)
 Particle[] flow = new Particle[2250];
 // global variables to influence the movement of all particles
 float globalX, globalY;
 
+void settings() {
+  size(640*2, 480, P3D);
+  //fullScreen(P3D);
+}
+
 void setup() {
   // it's possible to customize this, for example 1920x1080
-  size(1280, 720, P3D);
+  //size(1280, 720, P3D);
 
+  //kinect 1
+  context = new SimpleOpenNI(0, this);
+  //kinect 2
+  context2 = new SimpleOpenNI(1, this);
 
-
-
-  //fullScreen(P3D);
-  // initialize SimpleOpenNI object
-  context = new SimpleOpenNI(this);
-  if (!context.enableDepth() || !context.enableUser()) { 
-    // if context.enableScene() returns false
-    // then the Kinect is not working correctly
-    // make sure the green light is blinking
+  if (!context.enableDepth() || !context.enableUser() || !context2.enableDepth() || !context2.enableUser() ) { 
     println("Kinect not connected!"); 
     exit();
   } else {
-    // mirror the image to be more intuitive
-    context.setMirror(true);
+    //context.setMirror(mirror);
+    //context2.setMirror(mirror);
     // calculate the reScale value
     // currently it's rescaled to fill the complete width (cuts of top-bottom)
     // it's also possible to fill the complete height (leaves empty sides)
-    reScale = (float) width / kinectWidth;
+    reScale = (float) width / (kinectWidth*2);
     // create a smaller blob image for speed and efficiency
-    blobs = createImage(kinectWidth/3, kinectHeight/3, RGB);
+    blobs = createImage( (kinectWidth/3) * 2, kinectHeight/3, RGB);
     // initialize blob detection object to the blob image dimensions
     theBlobDetection = new BlobDetection(blobs.width, blobs.height);
     theBlobDetection.setThreshold(0.9);
@@ -77,17 +77,60 @@ void draw() {
   rect(0, 0, width, height);
   // update the SimpleOpenNI object
   context.update();
+  context2.update();
+
   // put the image into a PImage
-  cam = context.userImage();
+
+
+
+  PImage cam1, cam2;
+
+  cam1 = context.userImage();
+  cam2 = context2.userImage();
 
   //turn user image to black/white
-  for (int i=0; i<cam.pixels.length; i++) {
-    if (saturation(cam.pixels[i])<1) {
-      cam.pixels[i] = color(0, 0, 0);
+
+  //kinect 1
+  for (int i=0; i<cam1.pixels.length; i++) {
+    if (saturation(cam1.pixels[i])<1) {
+      cam1.pixels[i] = color(0, 0, 0);
     } else {
-      cam.pixels[i] = color(255, 255, 255);
+      cam1.pixels[i] = color(255, 255, 255);
     }
   }
+
+  //kinect 2
+  for (int i=0; i<cam2.pixels.length; i++) {
+    if (saturation(cam2.pixels[i])<1) {
+      cam2.pixels[i] = color(0, 0, 0);
+    } else {
+      cam2.pixels[i] = color(255, 255, 255);
+    }
+  }
+
+  //combine cam1 and cam2
+
+  PGraphics combined = createGraphics(kinectWidth*2, kinectHeight);
+  combined.beginDraw();
+
+  //mirror it
+  combined.pushMatrix();
+  combined.translate(width/4, height/2);
+  combined.imageMode(CENTER);
+  combined.scale(-1, 1);
+  combined.image(cam1, 0, 0);
+  combined.popMatrix();
+
+  combined.pushMatrix();
+  combined.translate(width/4 + width/2, height/2);
+  combined.scale(-1, 1);
+  imageMode(CENTER);
+  combined.image(cam2, 0, 0);
+  combined.popMatrix();
+
+  combined.endDraw();
+
+  cam = combined.get();
 
   //endhack
 
@@ -134,6 +177,6 @@ void drawFlowfield() {
 // sets the colors every nth frame
 void SetColor() {
   for (int i=0; i<flow.length; i++) {
-    flow[i].col = particleColors[int(random(0,particleColors.length))];
+    flow[i].col = particleColors[int(random(0, particleColors.length))];
   }
 }

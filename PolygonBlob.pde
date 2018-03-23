@@ -16,16 +16,6 @@ class PolygonBlob extends Polygon {
     // go over all the detected blobs
     for (int n=0; n<theBlobDetection.getBlobNb(); n++) {
       Blob b = theBlobDetection.getBlob(n);
-
-      //if (b!=null) {
-      //  strokeWeight(1);
-      //  stroke(255, 0, 0);
-      //  rect(
-      //    b.xMin*width, b.yMin*height, 
-      //    b.w*width, b.h*height
-      //    );
-      //}
-
       // for each substantial blob...
       if (b != null && b.getEdgeNb() > 100) {
         // create a new contour arrayList of PVectors
@@ -37,27 +27,19 @@ class PolygonBlob extends Polygon {
           EdgeVertex eB = b.getEdgeVertexB(m);
           // if both ain't null...
           if (eA != null && eB != null) {
-
-            //draw blobs
-            //stroke(255, 0, 0);
-            //strokeWeight(1);
-            //line(eA.x * width, eA.y * height, eB.x * width, eB.y * height);
-
-
-
             // get next and previous edgeVertexA
             EdgeVertex fn = b.getEdgeVertexA((m+1) % b.getEdgeNb());
             EdgeVertex fp = b.getEdgeVertexA((max(0, m-1)));
             // calculate distance between vertexA and next and previous edgeVertexA respectively
             // positions are multiplied by kinect dimensions because the blob library returns normalized values
-            float dn = dist(eA.x*kinectWidth, eA.y*kinectHeight, fn.x*kinectWidth, fn.y*kinectHeight);
-            float dp = dist(eA.x*kinectWidth, eA.y*kinectHeight, fp.x*kinectWidth, fp.y*kinectHeight);
+            float dn = dist(eA.x*kinectWidth*2, eA.y*kinectHeight, fn.x*kinectWidth*2, fn.y*kinectHeight);
+            float dp = dist(eA.x*kinectWidth*2, eA.y*kinectHeight, fp.x*kinectWidth*2, fp.y*kinectHeight);
             // if either distance is bigger than 15
             if (dn > 15 || dp > 15) {
               // if the current contour size is bigger than zero
               if (contour.size() > 0) {
                 // add final point
-                contour.add(new PVector(eB.x*kinectWidth, eB.y*kinectHeight));
+                contour.add(new PVector(eB.x*kinectWidth*2, eB.y*kinectHeight));
                 // add current contour to the arrayList
                 contours.add(contour);
                 // start a new contour arrayList
@@ -65,12 +47,12 @@ class PolygonBlob extends Polygon {
                 // if the current contour size is 0 (aka it's a new list)
               } else {
                 // add the point to the list
-                contour.add(new PVector(eA.x*kinectWidth, eA.y*kinectHeight));
+                contour.add(new PVector(eA.x*kinectWidth*2, eA.y*kinectHeight));
               }
               // if both distance are smaller than 15 (aka the points are close)
             } else {
               // add the point to the list
-              contour.add(new PVector(eA.x * kinectWidth, eA.y * kinectHeight));
+              contour.add(new PVector(eA.x * kinectWidth*2, eA.y * kinectHeight));
             }
           }
         }
